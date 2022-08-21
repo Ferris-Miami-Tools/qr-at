@@ -1,5 +1,6 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+
 admin.initializeApp();
 admin.firestore().settings({ ignoreUndefinedProperties : true });
 
@@ -13,47 +14,86 @@ const getAttendanceData = async (email, section) => {
   return snapshot.empty ? null : { ...snapshot.docs[0].data(), id: snapshot.docs[0].id };
 };
 
-exports.checkinAggregations = functions.firestore.document("/checkins/{id}")
-  .onWrite(async (change, context) => {
-    const oldData = change.before.exists ? change.before.data() : null; // null if new
-    const newData = change.after.exists ? change.after.data() : null; // null if deleted
+const findLastAttended = async (email, section) => {
+  const snapshot = await admin.firestore().collection("checkins")
+    .where("email", "==", email)
+    .where("section", "==", section)
+    .where("present", "==", true)
+    .orderBy("timestamp", "desc")
+    .limit(1)
+    .get();
+  return snapshot.empty ? null : snapshot.docs[0].data().date;
+};
 
-    if (!newData) return; // Deleted: Do nothing
+exports.newCheckin = functions.firestore.document("/checkins/{id}")
+  .onCreate(async (snap, _) => {
+    const checkinData = snap.data();
+    const curAttendance = await getAttendanceData(checkinData.email, checkinData.section);
 
-    if (!oldData) {
-      const curAtt = await getAttendanceData(newData.email, newData.section);
-      if (curAtt) { // Update Attendance
-        return await admin
-          .firestore()
-          .doc("/attendance/"+curAtt.id)
-          .update({
-            present: newData.present ? curAtt.present + 1 : curAtt.present,
-            excused: newData.excused ? curAtt.excused + 1 : curAtt.excused,
-            lastAttended: newData.present ? newData.date : curAtt.lastAttended,
-          });
-      } else { // Create Attendance
-        return await admin
-          .firestore()
-          .collection("attendance")
-          .add({
-            email: newData.email,
-            section: newData.section,
-            excused: newData.excused ? 1 : 0,
-            present: newData.present ? 1 : 0,
-            lastAttended: newData.present ? newData.date : null,
-          });
-      }
-    }
-
-    const curAtt = await getAttendanceData(newData.email, newData.section);
-    const jCIDate = new Date(newData.date+"T12:00:00");
-    const jAttDate = new Date(curAtt.lastAttended+"T12:00:00");
-    await admin
-      .firestore()
-      .doc("/attendance/"+curAtt.id)
-      .update({
-        excused: oldData.excused != newData.excused ? (newData.excused ? curAtt.excused + 1 : curAtt.excused - 1) : curAtt.excused,
-        present: oldData.present != newData.present ? (newData.present ? curAtt.present + 1 : curAtt.present - 1) : curAtt.present,
-        lastAttended: (newData.present && !curAtt.lastAttended) || jCIDate >= jAttDate ? newData.date : curAtt.lastAttended,
+    if (curAttendance) {
+      // Update attendance to increment either present or excused
+      // also update lastAttended
+      return await admin.firestore().doc("/attendance/"+curAtt.id).update({
+        present: checkinData.present ? curAttendance.present + 1 : curAttendance.present,
+        excused: checkinData.excused ? curAttendance.excused + 1 : curAttendance.excused,
+        lastAttended: checkinData.present ? checkinData.date : curAttendance.lastAttended,
       });
+    } else {
+      // Create attendance and set either present or excused and lastAttended
+      return await admin.firestore().collection("attendance").add({
+        email: checkinData.email,
+        section: checkinData.section,
+        excused: checkinData.excused ? 1 : 0,
+        present: checkinData.present ? 1 : 0,
+        lastAttended: checkinData.present ? checkinData.date : null,
+      });
+    }
+  });
+
+exports.updatedCheckin = functions.firestore.document("/checkins/{id}")
+  .onUpdate(async (change, _) => {
+    const previousValue = change.before.data();
+    const newValue = change.after.data();
+    const curAttendance = await getAttendanceData(newValue.email, newValue.section);
+
+    if (
+      previousValue.present != newValue.present
+      && newValue.present
+    ) {
+      // Increment present and update lastAttended to new
+      return await admin.firestore().doc("/attendance/"+curAttendance.id).update({
+        present: curAttendance.present + 1,
+        lastAttended: newValue.date,
+      });
+    } else if (
+      previousValue.present != newValue.present
+      && !newValue.present
+    ) {
+      // Decrement present and find new lastAttended to use
+      const lastAttended = await findLastAttended(newValue.email, newValue.section);
+      return await admin.firestore().doc("/attendance/"+curAttendance.id).update({
+        present: curAttendance.present - 1,
+        lastAttended,
+      });
+    } else if (
+      previousValue.excused != newValue.excused
+      && newValue.excused
+    ) {
+      // Increment excused and find new lastAttended to use
+      const lastAttended = await findLastAttended(newValue.email, newValue.section);
+      return await admin.firestore().doc("/attendance/"+curAttendance.id).update({
+        excused: curAttendance.excused + 1,
+        lastAttended,
+      });
+    } else if (
+      previousValue.excused != newValue.excused
+      && !newValue.excused
+    ) {
+      // Decrement excused and find new lastAttended to use
+      const lastAttended = await findLastAttended(newValue.email, newValue.section);
+      return await admin.firestore().doc("/attendance/"+curAttendance.id).update({
+        excused: curAttendance.excused - 1,
+        lastAttended,
+      });
+    }
   });

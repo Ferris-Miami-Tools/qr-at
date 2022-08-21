@@ -1,6 +1,6 @@
 <script setup>
   import { ref, onBeforeUnmount, computed } from "vue";
-  import { query, collection, where, getDocs, onSnapshot, updateDoc, doc, addDoc } from "firebase/firestore";
+  import { query, collection, where, getDocs, onSnapshot, updateDoc, doc, addDoc, serverTimestamp } from "firebase/firestore";
   import { db } from "../firebase";
   import store from "../store";
   import Toggle from "./Toggle.vue";
@@ -125,6 +125,7 @@
             section: student.section,
             present: student.present,
             excused: !student.excused,
+            timestamp: serverTimestamp()
           }
         );
       }
@@ -150,6 +151,7 @@
             section: student.section,
             present: !student.present,
             excused: student.excused,
+            timestamp: serverTimestamp(),
           }
         );
       }

@@ -1,6 +1,6 @@
 <script setup>
   import { ref } from "vue";
-  import { query, collection, where, getDocs, addDoc } from "firebase/firestore";
+  import { query, collection, where, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
   import store from "../store";
   import { db } from "../firebase";
   import AppBar from "../components/AppBar.vue";
@@ -64,6 +64,7 @@
           section: curSection,
           present: true,
           excused: false,
+          timestamp: serverTimestamp(),
         }
       );
       store.actions.successToast("Successfully checked you in.");
