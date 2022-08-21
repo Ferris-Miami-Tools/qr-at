@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "qr-at-prod"
+    "default": "qr-at-prod",
+    "dev": "qr-at-local"
   }
 }
