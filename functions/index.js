@@ -33,7 +33,7 @@ exports.newCheckin = functions.firestore.document("/checkins/{id}")
     if (curAttendance) {
       // Update attendance to increment either present or excused
       // also update lastAttended
-      return await admin.firestore().doc("/attendance/"+curAtt.id).update({
+      return await admin.firestore().doc("/attendance/"+curAttendance.id).update({
         present: checkinData.present ? curAttendance.present + 1 : curAttendance.present,
         excused: checkinData.excused ? curAttendance.excused + 1 : curAttendance.excused,
         lastAttended: checkinData.present ? checkinData.date : curAttendance.lastAttended,
