@@ -89,7 +89,6 @@
       });
       students.sort((a, b) => a.name.split(" ")[1] > b.name.split(" ")[1]);
       store.mutations.setStudents(students);
-      console.log(qsnap, students);
     } catch (err) {
       console.log("ERROR | Fetching students.", err);
       store.actions.errorToast("Error fetching students. Please try again shortly.");
