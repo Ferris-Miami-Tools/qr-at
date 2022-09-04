@@ -1,7 +1,7 @@
 import { reactive } from "vue";
 import { useToast } from "vue-toastification";
 import { onAuthStateChanged, GoogleAuthProvider, signInWithRedirect, signOut } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, query, collection, where, getDoc, getDocs } from "firebase/firestore";
 import { auth, db } from "./firebase";
 
 const toast = useToast();
@@ -44,6 +44,7 @@ const state = reactive({
   students: null,
   student: null,
   studentAttendance: null,
+  loadingStudents: false,
 });
 
 const mutations = {
@@ -68,6 +69,29 @@ const actions = {
     signOut(auth);
   },
   successToast: msg => toast.success(msg),
+  fetchStudents: async () => {
+    try {
+      state.loadingStudents = true;
+      mutations.setStudents(null);
+      let students = [];
+      const q = query(
+        collection(db, "attendance"),
+        where("section", "in", state.user.sections)
+      );
+      const qsnap = await getDocs(q);
+      qsnap.forEach(doc => {
+        students.push({ id: doc.id, ...doc.data()});
+      });
+      students.sort((a, b) => a.name.split(" ")[1] > b.name.split(" ")[1]);
+      mutations.setStudents(students);
+      actions.infoToast("Successfully updated student list");
+    } catch (error) {
+      console.log("ERROR | Fetching students.", err);
+      actions.errorToast("Error fetching students. Please try again shortly.");
+    } finally {
+      state.loadingStudents = false;
+    }
+  },
 };
 
 export default { state, mutations, actions };

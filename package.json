@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "firebase": "^9.9.2",
+    "json-to-csv-export": "^1.1.2",
     "vue": "^3.2.37",
     "vue-toastification": "^2.0.0-rc.5"
   },

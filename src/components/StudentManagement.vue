@@ -1,10 +1,9 @@
 <script setup>
   import { ref, onMounted } from "vue";
-  import { doc, query, collection, where, getDoc, getDocs, setDoc, deleteDoc, updateDoc, arrayRemove } from "firebase/firestore";
+  import { doc, getDoc, setDoc, deleteDoc, updateDoc, arrayRemove } from "firebase/firestore";
   import { db } from "../firebase";
   import store from "../store";
   import StudentTable from "./StudentTable.vue";
-  const loading = ref(false);
   const addingStudent = ref(false);
   const newName = ref("");
   const newEmail = ref("");
@@ -74,31 +73,9 @@
       addingStudent.value = false;
     }
   };
-  const fetchStudents = async () => {
-    try {
-      loading.value = true;
-      store.mutations.setStudents(null);
-      let students = [];
-      const q = query(
-        collection(db, "attendance"),
-        where("section", "in", store.state.user.sections)
-      );
-      const qsnap = await getDocs(q);
-      qsnap.forEach(doc => {
-        students.push({ id: doc.id, ...doc.data()});
-      });
-      students.sort((a, b) => a.name.split(" ")[1] > b.name.split(" ")[1]);
-      store.mutations.setStudents(students);
-    } catch (err) {
-      console.log("ERROR | Fetching students.", err);
-      store.actions.errorToast("Error fetching students. Please try again shortly.");
-    } finally {
-      loading.value = false;
-    }
-  };
   onMounted(() => {
     if (store.state.students) return;
-    fetchStudents();
+    store.actions.fetchStudents();
   });
 </script>
 
@@ -107,7 +84,7 @@
   <div class="grid grid-cols-12 gap-4">
     <div class="h-fit col-span-12 md:col-span-3">
       <div class="bg-white shadow-lg rounded-lg py-4 px-6 mb-4">
-        <button @click="() => fetchStudents()" :disabled="loading" class="w-full bg-transparent hover:bg-purple-400 text-purple-700 font-semibold hover:text-white py-3 px-4 border border-purple-400 hover:border-transparent rounded">
+        <button @click="() => store.actions.fetchStudents()" :disabled="store.state.loadingStudents" class="w-full bg-transparent hover:bg-purple-400 text-purple-700 font-semibold hover:text-white py-3 px-4 border border-purple-400 hover:border-transparent rounded">
           Refresh Students
         </button>
       </div>
@@ -143,7 +120,7 @@
     <transition name="fade" mode="out-in">
       <student-table v-if="store.state.students && store.state.students.length > 0" />
       <div v-else-if="store.state.students && store.state.students.length == 0">No students</div>
-      <div v-else-if="loading">Loading...</div>
+      <div v-else-if="store.state.loadingStudents">Loading...</div>
       <div v-else>Error - please try again shortly. You may use the "Refresh Students" button.</div>
     </transition>
   </div>
