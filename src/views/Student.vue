@@ -14,6 +14,7 @@
   };
   const checkingIn = ref(false);
   const checkedIn = ref(false);
+  const excused = ref(false);
   const noClass = ref(false);
   const checkin = async () => {
     checkingIn.value = true;
@@ -30,8 +31,14 @@
       );
       qsnap = await getDocs(q);
       if (!qsnap.empty) {
-        store.actions.infoToast("You have already checked in.");
         checkedIn.value = true;
+        
+        if (qsnap.docs[0].data().excused) {
+          excused.value = true;
+          store.actions.infoToast("You have been excused from this class.");
+        } else {
+          store.actions.infoToast("You have already checked in.");
+        }
         return;
       }
       // Check if they have a class to check in to
@@ -86,7 +93,8 @@
 
     <transition name="fade" mode="out-in">
       <div v-if="checkedIn" class="mx-auto w-full sm:1/2 md:w-1/4 bg-white shadow-lg rounded-lg py-4 px-6 text-center">
-        You are checked in.
+        <p v-if="excused">You have been excused from this class. You have <span class="font-bold">not</span> been marked as present. If you are in the room, please see your professor.</p>
+        <p v-else>You are checked in.</p>
       </div>
       <div v-else-if="noClass" class="mx-auto w-full sm:1/2 md:w-1/4 bg-white shadow-lg rounded-lg py-4 px-6 text-center">
         Come back during your class. Email your professor if you forgot to check in.
