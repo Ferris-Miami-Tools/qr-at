@@ -97,3 +97,17 @@ exports.updatedCheckin = functions.firestore.document("/checkins/{id}")
       });
     }
   });
+
+exports.getEST = functions.https.onCall((data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("failed-precondition", "The function must be called while authenticated.");
+  }
+
+  const d = new Date(new Date().toLocaleString("en-US", {timeZone: "America/New_York"}));
+
+  return {
+    day: d.getDay(),
+    tsm: (d.getHours() * 60) + d.getMinutes(),
+    date: d.getFullYear() + "-" + String((d.getMonth() + 1)).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"),
+  };
+});
