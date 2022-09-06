@@ -85,7 +85,7 @@ const actions = {
       students.sort((a, b) => a.name.split(" ")[1] > b.name.split(" ")[1]);
       mutations.setStudents(students);
       actions.infoToast("Successfully updated student list");
-    } catch (error) {
+    } catch (err) {
       console.log("ERROR | Fetching students.", err);
       actions.errorToast("Error fetching students. Please try again shortly.");
     } finally {
