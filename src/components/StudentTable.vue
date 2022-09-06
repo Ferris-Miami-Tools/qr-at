@@ -1,5 +1,5 @@
 <script setup>
-  import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
+  import { ref, computed, onMounted, onBeforeUnmount } from "vue";
   import store from "../store";
   const escapeListener = ref(null);
   const open = ref(false);
@@ -16,11 +16,6 @@
     { key: "lastAttended", value: "Last Seen", hidden: false },
     { key: null, value: "Actions", hidden: true },
   ]);
-  watch(
-    () => headings.value,
-    v => localStorage.setItem("headings", JSON.stringify(v)),
-    { deep: true }
-  );
   const searchedStudents = computed(() => {
     if (!store.state.students) return null;
     return store.state.students.filter(student => {
