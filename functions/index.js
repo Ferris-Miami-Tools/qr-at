@@ -39,8 +39,12 @@ exports.newCheckin = functions.firestore.document("/checkins/{id}")
         lastAttended: checkinData.present ? checkinData.date : curAttendance.lastAttended,
       });
     } else {
+      // Get student info for name
+      const student = await admin.firestore().doc("/users/"+checkinData.email).get();
+
       // Create attendance and set either present or excused and lastAttended
       return await admin.firestore().collection("attendance").add({
+        name: student.name,
         email: checkinData.email,
         section: checkinData.section,
         excused: checkinData.excused ? 1 : 0,
