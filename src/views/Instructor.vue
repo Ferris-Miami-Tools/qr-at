@@ -2,22 +2,22 @@
   import { ref } from "vue";
   import store from "../store";
   import AppBar from "../components/AppBar.vue";
+  import StudentDetails from "../components/StudentDetails.vue";
   import ClassSearch from "../components/ClassSearch.vue";
-  import StudentSearch from "../components/StudentSearch.vue";
   import StudentManagement from "../components/StudentManagement.vue";
   import Export from "../components/Export.vue";
+
   const activeTab = ref(0);
   const tabs = [
     "Class Search",
     "Student Management",
-    "Student Search",
     "Export"
   ];
   const naviagteToTab = (tab) => {
-    if (tab === 2 && !store.state.student) {
-      store.actions.errorToast("You must first select a student.");
-      return;
+    if (store.state.student) {
+      store.mutations.setStudent(null);
     }
+
     activeTab.value = tab;
   };
 </script>
@@ -37,9 +37,9 @@
       </li>
     </ul>
 
-    <class-search v-if="activeTab===0" />
+    <student-details v-if="store.state.student" />
+    <class-search v-else-if="activeTab===0" />
     <student-management v-else-if="activeTab===1" />
-    <student-search v-else-if="activeTab===2" />
     <export v-else />
   </main>
 </template>

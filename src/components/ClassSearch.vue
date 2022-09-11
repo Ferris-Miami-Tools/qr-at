@@ -52,7 +52,6 @@
     return studs;
   };
   const clearSearch = () => {
-    console.log("Clear Search");
     if (searchSub.value) searchSub.value();
     searchSub.value = null;
     students.value = null;

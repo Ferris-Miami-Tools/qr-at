@@ -45,6 +45,7 @@ const state = reactive({
   student: null,
   studentAttendance: null,
   loadingStudents: false,
+  lastUpdated: null,
 });
 
 const mutations = {
@@ -52,7 +53,6 @@ const mutations = {
   setStudents: v => state.students = v,
   setStudent: v => {
     state.student = v;
-    state.studentAttendance = null;
   },
   setStudentAttendance: v => state.studentAttendance = v,
 };
@@ -80,10 +80,17 @@ const actions = {
       );
       const qsnap = await getDocs(q);
       qsnap.forEach(doc => {
-        students.push({ id: doc.id, ...doc.data()});
+        const data = doc.data();
+        const dateSplit = data.lastAttended.split("-");
+        students.push({
+          id: doc.id,
+          ...data,
+          lastAttended: `${dateSplit[1]}-${dateSplit[2]}-${dateSplit[0]}`,
+        });
       });
       students.sort((a, b) => a.name.split(" ")[1] > b.name.split(" ")[1]);
       mutations.setStudents(students);
+      state.lastUpdated = (new Date()).toLocaleString();
       actions.infoToast("Successfully updated student list");
     } catch (err) {
       console.log("ERROR | Fetching students.", err);

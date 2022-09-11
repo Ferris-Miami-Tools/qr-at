@@ -1,11 +1,17 @@
 <script setup>
   import { reactive, computed } from "vue";
+  import { doc, deleteDoc, updateDoc, arrayRemove } from "firebase/firestore";
+  import { db } from "../firebase";
   import store from "../store";
+
+  import ConfirmDeletionModal from "./ConfirmDeletionModal.vue";
 
   const tableState = reactive({
     searchQuery: "",
     sortKey: "name",
     sortAsc: true,
+    deletingStudent: false,
+    deleteStudent: null,
   });
 
   const displayStudents = computed(() => {
@@ -48,17 +54,42 @@
       tableState.sortAsc = true;
     }
   };
+  const deleteStudent = async () => {
+    try {
+      tableState.deletingStudent = true;
+
+      await deleteDoc(doc(db, "attendance", tableState.deleteStudent.id));
+      await updateDoc(doc(db, "users", tableState.deleteStudent.email), {
+        sections: arrayRemove(tableState.deleteStudent.section),
+      });
+      store.state.students = store.state.students.filter(el => el.email != tableState.deleteStudent.email);
+      store.actions.successToast(`Deleted ${tableState.deleteStudent.name} from the database.`);
+    } catch (err) {
+      console.log("ERROR | Deleting student.", err);
+      store.actions.errorToast("Error deleting student. Please try again shortly.");
+    } finally {
+      tableState.deleteStudent = null;
+      tableState.deletingStudent = false;
+    }
+  };
 </script>
 
 <template>
   <div class="h-fit col-span-12 md:col-span-9 mb-6">
+    <confirm-deletion-modal
+      v-if="tableState.deleteStudent"
+      :deletingStudent="tableState.deletingStudent"
+      :studentName="tableState.deleteStudent.name"
+      :studentEmail="tableState.deleteStudent.email"
+      @cancel="tableState.deleteStudent = null"
+      @confirm-deletion="deleteStudent"
+    />
     <!-- Table -->
     <div class="overflow-x-auto bg-white rounded-lg shadow overflow-y-auto relative">
       <table class="border-collapse table-auto w-full whitespace-no-wrap bg-white table-striped relative">
         <thead>
           <tr>
             <th class="bg-gray-100" colspan="6">
-
               <div class="flex-1 pr-4">
                 <div class="relative md:w-1/3">
                   <input v-model="tableState.searchQuery" type="search" placeholder="Search..." class="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:shadow-outline text-gray-600 font-medium border-none bg-gray-100 focus:ring-purple-700" >
@@ -125,10 +156,8 @@
               </div>
             </th>
             <!-- Actions -->
-            <th class="bg-gray-100 sticky top-0 border-b border-gray-200 py-2 text-gray-600 font-bold tracking-wider uppercase text-xs">
-              <div class="flex items-center text-left">
-                <span>Actions</span>
-              </div>
+            <th class="select-none bg-gray-100 sticky top-0 border-b border-gray-200 py-2 text-gray-600 font-bold tracking-wider uppercase text-xs text-center">
+              <span>Actions</span>
             </th>
 					</tr>
 				</thead>
@@ -157,10 +186,10 @@
             </td>
             <!-- Actions -->
             <td class="border-dashed border-t border-gray-200">
-              <div v-if="store.state.student && student.email == store.state.student.email" class="py-1 text-green-500 border border-transparent">Selected</div>
-              <button v-else @click="() => store.mutations.setStudent(student)" class="bg-transparent hover:bg-green-500 text-green-700 hover:text-slate-50 py-1 px-2 border border-green-500 hover:border-transparent rounded">
-                Select Student
-              </button>
+              <div class="px-3 flex justify-around">
+                <svg @click="() => store.mutations.setStudent(student)" class="w-6 h-6 text-green-800 hover:cursor-pointer hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                <svg @click="tableState.deleteStudent = student" class="w-6 h-6 text-red-800 hover:cursor-pointer hover:text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              </div>
             </td>
           </tr>
         </tbody>
