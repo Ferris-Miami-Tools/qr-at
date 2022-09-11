@@ -59,7 +59,7 @@
 <template>
   <div class="grid grid-cols-12 gap-4">
     <!-- Sidebar -->
-    <div class="h-fit col-span-12 md:col-span-3">
+    <div class="h-fit col-span-12 md:col-span-4">
       <div class="bg-white shadow-lg rounded-lg py-4 px-6 mb-4">
         <section>
           <h3 class="text-lg text-center">{{ store.state.student.name }}</h3>
@@ -105,7 +105,7 @@
       </div>
     </div>
     <!-- Attendance Record -->
-    <div class="h-fit col-span-12 md:col-span-9">
+    <div class="h-fit col-span-12 md:col-span-8">
       <div class="bg-white shadow-lg rounded-lg">
         <transition name="fade" mode="out-in">
           <table
