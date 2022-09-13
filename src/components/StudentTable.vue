@@ -35,8 +35,8 @@
         if (tableState.sortAsc) return a.section.localeCompare(b.section);
         else return -a.section.localeCompare(b.section);
       } else if (tableState.sortKey == "lastAttended") {
-        const aDate = new Date(a.lastAttended+"T12:00:00");
-        const bDate = new Date(b.lastAttended+"T12:00:00");
+        const aDate = new Date(a.lastAttended.replace(/-/g, "/"));
+        const bDate = new Date(b.lastAttended.replace(/-/g, "/"));
 
         if (tableState.sortAsc) return aDate - bDate;
         else return bDate - aDate;
