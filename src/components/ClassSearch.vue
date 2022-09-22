@@ -269,7 +269,7 @@
           </div>
           <!-- Before class Time until class -->
           <p v-if="(new Date(`${searchDate}T12:00:00`)).getDate() == dateState.current.getDate() && dateState.current < dateState.class.start">
-            Time until class: {{ Math.round((((dateState.class.start - dateState.current) % 86400000)% 3600000)/ 60000) }} minutes
+            Time until class: {{ Math.round(((dateState.class.start - dateState.current)/1000)/60) }} minutes
           </p>
           <hr class="mt-4" />
           <button @click="clearSearch" class="mt-4 w-full bg-transparent hover:bg-purple-400 text-purple-700 font-semibold hover:text-white py-3 px-4 border border-purple-400 hover:border-transparent rounded">
