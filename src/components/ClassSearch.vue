@@ -92,8 +92,8 @@
         const classData = qsnap.docs[0].data();
         
         // Set date state
-        dateState.class.startTSM = classData.start + 15;
-        dateState.class.endTSM = classData.end - 15;
+        dateState.class.startTSM = classData.start;
+        dateState.class.endTSM = classData.end;
         dateState.class.startHour = Math.floor(dateState.class.startTSM / 60);
         dateState.class.startMinute = dateState.class.startTSM - (dateState.class.startHour * 60);
         dateState.class.startString = `${dateState.class.startHour % 12}:${leadingZero(dateState.class.startMinute)}${dateState.class.startHour >= 12 ? 'PM' : 'AM'}`;

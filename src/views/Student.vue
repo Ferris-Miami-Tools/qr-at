@@ -41,7 +41,7 @@
 
     qsnap.forEach(doc => {
       const data = doc.data();
-      if (data.start <= dt.tsm && data.end >= dt.tsm) {
+      if ((data.start-5) <= dt.tsm && (data.end+5) >= dt.tsm) {
         ongoing = true;
         ongoingSection = data.section;
       }
