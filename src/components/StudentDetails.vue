@@ -125,9 +125,9 @@
               </tr>
             </tbody>
           </table>
-          <div v-else-if="store.state.studentAttendance && store.state.studentAttendance.attendance.length == 0">{{ store.state.student.name }} has not attended any classes.</div>
-          <div v-else-if="loading">Loading...</div>
-          <div v-else>Error - please try again shortly.</div>
+          <div v-else-if="store.state.studentAttendance && store.state.studentAttendance.attendance.length == 0" class="py-4 px-6">{{ store.state.student.name }} has not attended any classes.</div>
+          <div v-else-if="loading" class="py-4 px-6">Loading...</div>
+          <div v-else class="py-4 px-6">Error - please try again shortly.</div>
         </transition>
       </div>
     </div>

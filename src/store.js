@@ -4,6 +4,8 @@ import { onAuthStateChanged, GoogleAuthProvider, signInWithRedirect, signOut } f
 import { doc, query, collection, where, getDoc, getDocs } from "firebase/firestore";
 import { auth, db } from "./firebase";
 
+const dow = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
 const toast = useToast();
 
 onAuthStateChanged(auth, async user => {
@@ -46,6 +48,8 @@ const state = reactive({
   studentAttendance: null,
   loadingStudents: false,
   lastUpdated: null,
+  classes: null,
+  loadingClasses: true,
 });
 
 const mutations = {
@@ -55,6 +59,7 @@ const mutations = {
     state.student = v;
   },
   setStudentAttendance: v => state.studentAttendance = v,
+  setClasses: v => state.classes = v,
 };
 
 const actions = {
@@ -69,6 +74,42 @@ const actions = {
     signOut(auth);
   },
   successToast: msg => toast.success(msg),
+  fetchClasses: async () => {
+    try {
+      state.loadingClasses = true;
+
+      let classes = [];
+      const q = query(
+        collection(db, "classes"),
+        where("section", "in", state.user.sections)
+      );
+      const qsnap = await getDocs(q);
+
+      qsnap.forEach(aClass => {
+        const data = aClass.data();
+
+        const startHours = Math.floor(data.start / 60);
+        const startMinutes = String(data.start - (startHours * 60)).padStart(2, "0");
+        const endHours = Math.floor(data.end / 60);
+        const endMinutes = String(data.end - (endHours * 60)).padStart(2, "0");
+
+        classes.push({
+          section: data.section,
+          dayNum: data.day,
+          day: dow[data.day],
+          start: `${startHours}:${startMinutes}`,
+          end: `${endHours}:${endMinutes}`,
+        });
+      });
+      classes.sort((a, b) => a.section == b.section ? a.dayNum - b.dayNum : a.section.localeCompare(b.section));
+      mutations.setClasses(classes);
+    } catch (err) {
+      console.log("ERROR | Fetching classes.", err);
+      actions.errorToast("Error fetching classes. Please try again shortly.");
+    } finally {
+      state.loadingClasses = false;
+    }
+  },
   fetchStudents: async () => {
     try {
       state.loadingStudents = true;
@@ -81,12 +122,21 @@ const actions = {
       const qsnap = await getDocs(q);
       qsnap.forEach(doc => {
         const data = doc.data();
-        const dateSplit = data.lastAttended.split("-");
-        students.push({
-          id: doc.id,
-          ...data,
-          lastAttended: `${dateSplit[1]}-${dateSplit[2]}-${dateSplit[0]}`,
-        });
+
+        if (data.lastAttended) {
+          const dateSplit = data.lastAttended.split("-");
+          students.push({
+            id: doc.id,
+            ...data,
+            lastAttended: `${dateSplit[1]}-${dateSplit[2]}-${dateSplit[0]}`,
+          });
+        } else {
+          students.push({
+            id: doc.id,
+            ...data,
+            lastAttended: "N/A",
+          });
+        }
       });
       students.sort((a, b) => a.name.split(" ")[1] > b.name.split(" ")[1]);
       mutations.setStudents(students);

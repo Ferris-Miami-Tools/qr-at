@@ -3,6 +3,7 @@
   import store from "../store";
   import AppBar from "../components/AppBar.vue";
   import StudentDetails from "../components/StudentDetails.vue";
+  import ClassList from "../components/ClassList.vue";
   import ClassSearch from "../components/ClassSearch.vue";
   import StudentManagement from "../components/StudentManagement.vue";
   import Export from "../components/Export.vue";
@@ -11,6 +12,7 @@
   const tabs = [
     "Class Search",
     "Student Management",
+    "Class List",
     "Export"
   ];
   const naviagteToTab = (tab) => {
@@ -40,6 +42,7 @@
     <student-details v-if="store.state.student" />
     <class-search v-else-if="activeTab===0" />
     <student-management v-else-if="activeTab===1" />
+    <class-list v-else-if="activeTab===2" />
     <export v-else />
   </main>
 </template>
