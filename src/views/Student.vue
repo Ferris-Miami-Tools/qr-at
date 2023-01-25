@@ -128,21 +128,27 @@
   <main class="w-screen px-4">
     <h2 class="text-gray-500 text-center text-3xl font-light mb-6">Student</h2>
 
-    <transition name="fade" mode="out-in">
-      <div v-if="checkinState.checkedIn" class="mx-auto w-full sm:1/2 md:w-1/4 bg-white shadow-lg rounded-lg py-4 px-6 text-center">
-        <p v-if="checkinState.excused">You have been excused from this class. You have <span class="font-bold">not</span> been marked as present. If you are in the room, please speak to your professor.</p>
-        <p v-else>You are checked in.</p>
-      </div>
-      <div v-else-if="checkinState.noClass" class="mx-auto w-full sm:1/2 md:w-1/4 bg-white shadow-lg rounded-lg py-4 px-6 text-center">
-        Come back during your class. Email your professor if you forgot to check in.
-      </div>
-      <div v-else class="mx-auto w-full sm:1/2 md:w-1/4 bg-white shadow-lg rounded-lg py-4 px-6">
-        <button @click="checkin" :disabled="checkinState.checkingIn" class="mx-auto block bg-transparent hover:bg-purple-400 text-purple-700 font-semibold hover:text-white py-2 px-4 border border-purple-400 hover:border-transparent rounded duration-200">
-          <span v-if="checkinState.checkingIn">Loading!</span>
-          <span v-else>Check in</span>
-        </button>
-      </div>
-    </transition>
+    <div class="mx-auto w-full sm:2/3 md:w-1/2 bg-white shadow-lg rounded-lg py-4 px-6 text-center">
+      <p>The name we have on record for you is <span class="font-bold text-blue-600">{{ store.state.user.name }}</span>, if this is not your chosen name please email Professor Ferris (<a href="mailto:ferrisj2@miamioh.edu" class="text-purple-600 hover:text-purple-800">ferrisj2@miamioh.edu</a>).</p>
+
+      <hr class="my-4">
+
+      <transition name="fade" mode="out-in">
+        <div v-if="checkinState.checkedIn">
+          <p v-if="checkinState.excused" class="text-orange-600">You have been excused from this class. You have <span class="font-bold">not</span> been marked as present. If you are in the room, please speak to your professor.</p>
+          <p v-else class="text-green-600 font-bold">You are checked in.</p>
+        </div>
+        <div v-else-if="checkinState.noClass" class="text-red-600 font-bold">
+          Come back during your class. Email your professor if you forgot to check in.
+        </div>
+        <div v-else>
+          <button @click="checkin" :disabled="checkinState.checkingIn" class="mx-auto block bg-transparent hover:bg-purple-400 text-purple-700 font-semibold hover:text-white py-2 px-4 border border-purple-400 hover:border-transparent rounded duration-200">
+            <span v-if="checkinState.checkingIn">Loading!</span>
+            <span v-else>Check in</span>
+          </button>
+        </div>
+      </transition>
+    </div>
   </main>
 </template>
 
