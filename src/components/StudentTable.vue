@@ -40,6 +40,9 @@
 
         if (tableState.sortAsc) return aDate - bDate;
         else return bDate - aDate;
+      } else if (tableState.sortKey == "total") {
+        const diff = (a.present + a.excused) - (b.present + b.excused);
+        return tableState.sortAsc ? diff : diff * -1;
       } else {
         if (tableState.sortAsc) return a[tableState.sortKey] - b[tableState.sortKey];
         else return b[tableState.sortKey] - a[tableState.sortKey];
@@ -145,6 +148,16 @@
                 </svg>
               </div>
             </th>
+            <!-- Total -->
+            <th @click="() => setSortKey('total')" class="select-none bg-gray-100 sticky top-0 border-b border-gray-200 px-6 py-2 text-gray-600 font-bold tracking-wider uppercase text-xs cursor-pointer">
+              <div class="flex items-center">
+                <span>Total</span>
+                <svg v-if="'total' == tableState.sortKey" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 ml-1" :class="tableState.sortAsc ? 'rotate-180' : ''" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="0" y="0" width="24" height="24" stroke="none"></rect>
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </div>
+            </th>
             <!-- Last Seen -->
             <th @click="() => setSortKey('lastAttended')" class="select-none bg-gray-100 sticky top-0 border-b border-gray-200 px-6 py-2 text-gray-600 font-bold tracking-wider uppercase text-xs cursor-pointer">
               <div class="flex items-center">
@@ -179,6 +192,10 @@
             <!-- Present -->
             <td class="border-dashed border-t border-gray-200">
               <span class="text-gray-700 px-6 py-3 flex items-center">{{ student.present }}</span>
+            </td>
+            <!-- Total -->
+            <td class="border-dashed border-t border-gray-200">
+              <span class="text-gray-700 px-6 py-3 flex items-center">{{ student.present + student.excused }}</span>
             </td>
             <!-- Last Attended -->
             <td class="border-dashed border-t border-gray-200">
