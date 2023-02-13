@@ -92,7 +92,7 @@
       <table class="border-collapse table-auto w-full whitespace-no-wrap bg-white table-striped relative">
         <thead>
           <tr>
-            <th class="bg-gray-100" colspan="6">
+            <th class="bg-gray-100" colspan="7">
               <div class="flex-1 pr-4">
                 <div class="relative md:w-1/3">
                   <input v-model="tableState.searchQuery" type="search" placeholder="Search..." class="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:shadow-outline text-gray-600 font-medium border-none bg-gray-100 focus:ring-purple-700" >
